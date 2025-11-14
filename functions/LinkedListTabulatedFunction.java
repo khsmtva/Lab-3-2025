@@ -159,26 +159,35 @@ public class LinkedListTabulatedFunction implements TabulatedFunction {
     }
     
     public double getFunctionValue(double x) {
-        if (x < getLeftDomainBorder() || x > getRightDomainBorder()) {
-            return Double.NaN;
-        }
-        
-        // Поиск интервала для интерполяции
-        FunctionNode current = head.next;
-        while (current != head && current.next != head) {
-            double x1 = current.point.getX();
-            double x2 = current.next.point.getX();
-            
-            if (x >= x1 && x <= x2) {
-                double y1 = current.point.getY();
-                double y2 = current.next.point.getY();
-                return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
-            }
-            current = current.next;
-        }
-        
+    if (x < getLeftDomainBorder() || x > getRightDomainBorder()) {
         return Double.NaN;
     }
+    
+    // Оптимизация: проверка точного совпадения с существующей точкой
+    FunctionNode current = head.next;
+    while (current != head) {
+        if (Math.abs(current.point.getX() - x) < 1e-10) {
+            return current.point.getY();
+        }
+        current = current.next;
+    }
+    
+    // Линейная интерполяция если точного совпадения нет
+    current = head.next;
+    while (current != head && current.next != head) {
+        double x1 = current.point.getX();
+        double x2 = current.next.point.getX();
+        
+        if (x >= x1 && x <= x2) {
+            double y1 = current.point.getY();
+            double y2 = current.next.point.getY();
+            return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
+        }
+        current = current.next;
+    }
+    
+    return Double.NaN;
+}
     
     public int getPointsCount() {
         return pointsCount;

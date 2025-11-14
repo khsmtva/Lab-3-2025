@@ -54,23 +54,31 @@ public class ArrayTabulatedFunction implements TabulatedFunction {
     }
     
     public double getFunctionValue(double x) {
-        if (x < getLeftDomainBorder() || x > getRightDomainBorder()) {
-            return Double.NaN;
-        }
-        
-        for (int i = 0; i < pointsCount - 1; i++) {
-            double x1 = points[i].getX();
-            double x2 = points[i + 1].getX();
-            
-            if (x >= x1 && x <= x2) {
-                double y1 = points[i].getY();
-                double y2 = points[i + 1].getY();
-                return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
-            }
-        }
-        
+    if (x < getLeftDomainBorder() || x > getRightDomainBorder()) {
         return Double.NaN;
     }
+    
+    // Оптимизация
+    for (int i = 0; i < pointsCount; i++) {
+        if (Math.abs(points[i].getX() - x) < 1e-10) {
+            return points[i].getY();
+        }
+    }
+    
+    // Линейная интерполяция если точного совпадения нет
+    for (int i = 0; i < pointsCount - 1; i++) {
+        double x1 = points[i].getX();
+        double x2 = points[i + 1].getX();
+        
+        if (x >= x1 && x <= x2) {
+            double y1 = points[i].getY();
+            double y2 = points[i + 1].getY();
+            return y1 + (y2 - y1) * (x - x1) / (x2 - x1);
+        }
+    }
+    
+    return Double.NaN;
+}
 
     // Методы для работы с точками
     public int getPointsCount() {
